@@ -1,0 +1,19 @@
+https://www.itead.cc/wiki/Serial_Port_Bluetooth_Module_(Master/Slave)_:_HC-05
+
+* connect -> see red led blinks fast
+
+* press button on module
+* terminal at 9600 OR 38400 line ending = \r\n, send command and expect "OK"
+	AT
+	AT+ORGL
+	AT+UART=115200,0,0
+	AT+RESET
+
+* press button on module
+* terminal at 115200 line ending = \r\n
+	AT+NAME=uv_master
+	AT+PSWD=1000
+	AT+ROLE=1
+	AT+CMODE=0
+	AT+BIND=98d3,31,90303a
+	AT+RESET
