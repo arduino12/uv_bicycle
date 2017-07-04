@@ -5,8 +5,8 @@ from infra.core.ansi import Ansi
 
 IS_WINDOWS = (os.name == 'nt')
 
-GSM_PORT = 'COM27' if IS_WINDOWS else '/dev/gsm_a6'
-ARDUINO_PORT = 'COM42' if IS_WINDOWS else '/dev/arduino_uv'
+GSM_PORT = 'COM12' if IS_WINDOWS else '/dev/gsm_a6'
+ARDUINO_PORT = 'COM13' if IS_WINDOWS else '/dev/arduino_uv'
 
 A6_GSM_SERIAL = {'url': '', 'baudrate': 115200, 'timeout': 1} # 'spy://COM34'
 ARDUINO_SERIAL = {'url': '', 'baudrate': 115200, 'timeout': 1}
@@ -18,7 +18,7 @@ SLICE_ON_MS = 70
 SLICE_OFF_MS = 0
 CHAR_OFF_MS = 90
 
-LOGOR_LEVEL = logging.DEBUG
+LOGOR_LEVEL = logging.INFO
 LOGOR_FORMATS = ('%(asctime)s %(name)s %(levelname)s:\n%(message)s', '%d/%m/%y %H:%M:%S')
 LOGOR_COLOR_MAP = {
     logging.CRITICAL: (Ansi.YELLOW, Ansi.BACKGROUND_RED,),
