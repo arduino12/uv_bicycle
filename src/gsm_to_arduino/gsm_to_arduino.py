@@ -4,20 +4,20 @@ import logging
 import argparse
 
 
-import infra.app.app
+from infra.app import app
 from uv_bicycle.src.gsm_to_arduino import constants
 # from infra.modules.gsm_ai_a6 import GsmAiA6
 # from infra.modules.arduino_uv_bicycle import ArduinoUvBicycle
 from infra.old_modules.gsm.a6_gsm import A6Gsm
 from infra.old_modules.arduino.uv_bicycle import UvBicycle
-from infra.core.logor import Logor
 
 
-class GsmToArduino(infra.app.app.App):
+class GsmToArduino(app.App):
 
     def __init__(self):
-        infra.app.app.App.__init__(self)
-        print('GsmToArduino.__init__')
+        app.App.__init__(self, constants)
+        self._logger = logging.getLogger(GsmToArduino.__name__)
+        
         parser = argparse.ArgumentParser(
             description='UV Bicycle')
         parser.add_argument(
@@ -38,7 +38,6 @@ class GsmToArduino(infra.app.app.App):
         self._args, _ = parser.parse_known_args()
         
         print(constants.BANNER)
-        Logor(constants.LOGOR_FORMATS, constants.LOGOR_LEVEL, constants.LOGOR_COLOR_MAP)
         
         constants.ARDUINO_SERIAL['url'] = self._args.arduino_port
         constants.A6_GSM_SERIAL['url'] = self._args.gsm_port
@@ -51,7 +50,7 @@ class GsmToArduino(infra.app.app.App):
             self.a6_gsm.handle_sms = self.handle_sms
             self.a6_gsm.dummy()
         except Exception:
-            print('error: a6_gsm did not respond')
+            self._logger.error('a6_gsm did not respond')
             
         try:
             self._uv_bicycle_serial = serial.serial_for_url(**constants.ARDUINO_SERIAL)
@@ -63,11 +62,11 @@ class GsmToArduino(infra.app.app.App):
             self.uv_bicycle.set_slice_off_ms(constants.SLICE_OFF_MS)
             self.uv_bicycle.set_char_off_ms(constants.CHAR_OFF_MS)
         except Exception:
-            print('error: uv_bicycle did not respond')
+            self._logger.error('uv_bicycle did not respond')
 
     def handle_sms(self, number, send_time, text):
         text = text.encode(errors='replace').decode()
-        print(u'== SMS message received ==\nFrom: {}\nTime: {}\nMessage:\n{}\n'.format(
+        self._logger.info(u'== SMS message received ==\nFrom: {}\nTime: {}\nMessage:\n{}\n'.format(
             number, send_time, text))
         text = text.strip().replace('\n', ' ').replace('\t', ' ').replace('\r', '')[:constants.MAX_DRAW_CHARS]
         try:
@@ -76,7 +75,6 @@ class GsmToArduino(infra.app.app.App):
             pass
 
     def __exit__(self):
-        print('GsmToArduino.__exit__')
         try:
             self._a6_gsm_reader.close()
         except Exception:
@@ -85,3 +83,4 @@ class GsmToArduino(infra.app.app.App):
             self._uv_bicycle_reader.close()
         except Exception:
             pass
+        app.App.__exit__(self)
