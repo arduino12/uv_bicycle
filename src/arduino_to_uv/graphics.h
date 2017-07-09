@@ -20,7 +20,7 @@
 #define GRAPHICS_DRAW_TEXT			(5)
 
 struct {
-	uint8_t * font = NULL;
+	const uint8_t * font = NULL;
 	uint8_t height;
 	uint8_t bytes;
 	uint8_t first_char;
@@ -28,7 +28,7 @@ struct {
 } graphics_font;
 
 struct {
-	uint8_t * text = NULL;
+	char * text = NULL;
 	uint16_t text_char_count;
 	uint16_t text_char_index;
 	uint8_t char_slices;
@@ -91,11 +91,11 @@ void graphics_clear_text() {
 	leds_write(0);
 }
 
-void graphics_set_text(const uint8_t * text) {
+void graphics_set_text(const char * text) {
 	graphics_clear_text();
 	if (!*text)
 		return;
-	graphics_text.text = malloc(strlen(text) + 1);
+	graphics_text.text = (char*)malloc(strlen(text) + 1);
 	if (graphics_text.text == NULL)
 		return;
 	strcpy(graphics_text.text, text);
@@ -148,7 +148,7 @@ void graphics_update(uint32_t cur_millis) {
 	}
 }
 
-void graphics_set_font(uint8_t * font) {
+void graphics_set_font(const uint8_t * font) {
 	graphics_clear_text();
 	graphics_font.font = font;
 	graphics_font.height = _read_font_8(GRAPHICS_FONT_HEIGHT);

@@ -5,27 +5,21 @@
 #include "leds.h"
 #include "common.h"
 #include "graphics.h"
+#include "fix_texts.h"
 
 /******************************************/
 #define COMMAND_BUFFER_SIZE			(100)
 #define COMMAND_TIMEOUT_MS			(150)
 #define SCREEN_SAVER_S				(40)
-
-const uint8_t * FIX_TEXTS[] = {
-	"שלום עולם",
-	"כל הכבוד לברוך!",
-	"מוזיאון המדע בירושלים..!",
-	"o_o  ^.^  O..O",
-};
 /******************************************/
 
 struct {
-	uint8_t buffer[COMMAND_BUFFER_SIZE];
-	uint8_t buffer_index;
-	uint32_t timeout;
+	char buffer[COMMAND_BUFFER_SIZE];
+	uint8_t buffer_index = 0;
+	uint32_t timeout = 0;
 } command;
 
-uint32_t screen_saver_ms = SCREEN_SAVER_S * 1000;
+uint32_t screen_saver_ms = (uint32_t)SCREEN_SAVER_S * 1000;
 
 
 void print_help() {
