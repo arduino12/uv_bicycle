@@ -1,6 +1,7 @@
 import serial
 import serial.threaded
 import logging
+import logging.handlers
 import argparse
 
 
@@ -17,6 +18,9 @@ class GsmToArduino(app.App):
     def __init__(self):
         app.App.__init__(self, constants)
         self._logger = logging.getLogger(GsmToArduino.__name__)
+        self._file_logger = logging.getLogger('sms_log')
+        self._file_logger.addHandler(logging.handlers.RotatingFileHandler(
+            constants.FILE_LOGGER_PATH, constants.FILE_LOGGER_SIZE, constants.FILE_LOGGER_COUNT))
         
         parser = argparse.ArgumentParser(
             description='UV Bicycle')
@@ -66,8 +70,8 @@ class GsmToArduino(app.App):
 
     def handle_sms(self, number, send_time, text):
         text = text.encode(errors='replace').decode()
-        self._logger.info(u'== SMS message received ==\nFrom: {}\nTime: {}\nMessage:\n{}\n'.format(
-            number, send_time, text))
+        self._logger.info('From: %s At: %s\n%s', number, send_time, text)
+        self._file_logger.error('From: %s At: %s\n%s', number, send_time, text)
         text = text.strip().replace('\n', ' ').replace('\t', ' ').replace('\r', '')[:constants.MAX_DRAW_CHARS]
         try:
             self.uv_bicycle.draw_text_rtl(text, constants.DRAW_RTL)

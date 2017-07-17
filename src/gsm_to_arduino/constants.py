@@ -30,6 +30,10 @@ LOGOR_COLOR_MAP = {
     'levelname': (Ansi.MAGENTA, Ansi.FAINT),
 }
 
+FILE_LOGGER_PATH = r'C:\Users\arad-eee\Documents\GitHub\uv_bicycle\src\gsm_to_arduino\log_sms.log' # 'COM12' if IS_WINDOWS else '/dev/gsm_a6'
+FILE_LOGGER_SIZE = 1024
+FILE_LOGGER_COUNT = 10
+
 BANNER = Ansi.style(
 r"""
                   /'\
