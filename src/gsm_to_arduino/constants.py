@@ -1,40 +1,35 @@
-import os
 import logging
+import os.path
+
 from infra.core.ansi import Ansi
+from infra.run.common import *
 
 
-IS_WINDOWS = (os.name == 'nt')
+GSM_PORT = 'loop://' if IS_WINDOWS else '/dev/ttyAiGsm'
+UV_BICYCLE_PORT = 'loop://' if IS_WINDOWS else '/dev/ttyUvBicycle'
 
-GSM_PORT = 'COM12' if IS_WINDOWS else '/dev/gsm_a6'
-ARDUINO_PORT = 'COM13' if IS_WINDOWS else '/dev/arduino_uv'
+A6_GSM_SERIAL = {'url': '', 'baudrate': 115200, 'timeout': 1} # 'spy://COM34', 'xonxoff': True, 'rtscts': True
+UV_BICYCLE_SERIAL = {'url': '', 'baudrate': 115200, 'timeout': 1}
 
-A6_GSM_SERIAL = {'url': '', 'baudrate': 115200, 'timeout': 1} # 'spy://COM34'
-ARDUINO_SERIAL = {'url': '', 'baudrate': 115200, 'timeout': 1}
+UV_BICYCLE_MAX_DRAW_CHARS = 120
+UV_BICYCLE_DRAW_RTL = True
+UV_BICYCLE_SCREEN_SAVER_SEC = 90
+UV_BICYCLE_SLICE_ON_MS = 70
+UV_BICYCLE_SLICE_OFF_MS = 0
+UV_BICYCLE_CHAR_OFF_MS = 90
 
-MAX_DRAW_CHARS = 120
-DRAW_RTL = True
-SCREEN_SAVER_SEC = 90
-SLICE_ON_MS = 70
-SLICE_OFF_MS = 0
-CHAR_OFF_MS = 90
+GSM_SIM_NUMBER = '0'
 
-LOGOR_LEVEL = logging.INFO
-LOGOR_FORMATS = ('%(asctime)s %(name)s %(levelname)s:\n%(message)s', '%d/%m/%y %H:%M:%S')
-LOGOR_COLOR_MAP = {
-    logging.CRITICAL: (Ansi.YELLOW, Ansi.BACKGROUND_RED,),
-    logging.ERROR: (Ansi.RED, Ansi.BRIGHT),
-    logging.WARNING: (Ansi.YELLOW, Ansi.BRIGHT),
-    logging.INFO: (Ansi.CYAN, Ansi.FAINT),
-    logging.DEBUG: (Ansi.YELLOW, Ansi.FAINT),
-    'name': (Ansi.GREEN, Ansi.FAINT),
-    'levelname': (Ansi.MAGENTA, Ansi.FAINT),
-}
+# SMS_LOGGER_PATH = os.path.join(BASIC_PATH, 'sms_log.txt')
+# SMS_LOGGER_SIZE = 1024
+# SMS_LOGGER_COUNT = 10
 
-FILE_LOGGER_PATH = r'C:\Users\arad-eee\Documents\GitHub\uv_bicycle\src\gsm_to_arduino\log_sms.log' # 'COM12' if IS_WINDOWS else '/dev/gsm_a6'
-FILE_LOGGER_SIZE = 1024
-FILE_LOGGER_COUNT = 10
+SHEET_FILE_SERVICE = os.path.join(BASIC_PATH, 'logger-995ad2d4b91d.json')
+SHEET_FILE_NAME = 'sms_log'
 
-BANNER = Ansi.style(
+# LOGOR_LEVEL = logging.DEBUG
+
+APP_BANNER = Ansi.style(
 r"""
                   /'\
                  /
