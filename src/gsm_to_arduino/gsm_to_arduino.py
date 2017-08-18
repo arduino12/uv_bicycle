@@ -16,15 +16,15 @@ class GsmToArduino(app.App):
     # colored stdout logger for app
     _logger = logging.getLogger('gsm_to_arduino')
     # rotating file logger for sms messages
-    # _sms_logger = logging.getLogger('sms_logger')
+    _sms_logger = logging.getLogger('sms_logger')
 
     def __init__(self):
         app.App.__init__(self, constants)
         # config sms logger
-        # self._sms_logger.setLevel(logging.INFO)
-        # [self._sms_logger.removeHandler(i) for i in self._sms_logger.handlers]
-        # self._sms_logger.addHandler(logging.handlers.RotatingFileHandler(
-            # constants.SMS_LOGGER_PATH, constants.SMS_LOGGER_SIZE, constants.SMS_LOGGER_COUNT))
+        self._sms_logger.propagate = False
+        self._sms_logger.setLevel(logging.DEBUG)
+        self._sms_logger.addHandler(logging.handlers.RotatingFileHandler(
+            constants.SMS_LOGGER_PATH, constants.SMS_LOGGER_SIZE, constants.SMS_LOGGER_COUNT))
         # parse runtime arguments
         parser = argparse.ArgumentParser(
             description='UV Bicycle')
@@ -107,7 +107,7 @@ class GsmToArduino(app.App):
         number = self.a6_gsm.normalize_phone_number(number)
         send_time = send_time.strftime(constants.DATETIME_FORMAT)
         self._logger.info('AT: %s FROM: %s MESSAGES: %s', send_time, number, text)
-        # self._sms_logger.info('AT: %s FROM: %s MESSAGES: %s', send_time, number, text)
+        self._sms_logger.debug('AT: %s FROM: %s MESSAGES: %s', send_time, number, text)
         try:
             self.uv_bicycle.draw_text_rtl('  ' + text[:constants.UV_BICYCLE_MAX_DRAW_CHARS], constants.UV_BICYCLE_DRAW_RTL)
         except:
