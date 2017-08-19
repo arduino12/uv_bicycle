@@ -33,14 +33,14 @@ class GsmToArduino(app.App):
             metavar='<arduino port>',
             dest='arduino_port',
             type=str,
-            default=constants.UV_BICYCLE_PORT,
+            default=constants.UV_BICYCLE_SERIAL['url'],
             help='the arduino (BT) serial port')
         parser.add_argument(
             '--gsm_port',
             metavar='<gsm port>',
             dest='gsm_port',
             type=str,
-            default=constants.GSM_PORT,
+            default=constants.A6_GSM_SERIAL['url'],
             help='the A6 gsm module serial port')
         self._args, _ = parser.parse_known_args()
         # print app banner
@@ -50,10 +50,13 @@ class GsmToArduino(app.App):
         constants.A6_GSM_SERIAL['url'] = self._args.gsm_port
 
         try:
+            # ignore sheets DEBUG and INFO spam
             for i in ('googleapiclient.discovery', 'oauth2client.transport', 'oauth2client.crypt', 'oauth2client.client'):
                 logging.getLogger(i).setLevel(logging.WARNING)
+            # open sheet using the SHEET_FILE_SERVICE key
             self._drive_sheets = pygsheets.authorize(service_file=constants.SHEET_FILE_SERVICE)
             self._sms_sheet = self._drive_sheets.open(constants.SHEET_FILE_NAME)
+            # open the worksheet within the sheet for sms logging
             self._update_sms_workseet()
         except:
             self._logger.exception('sms_workseet')
@@ -86,6 +89,7 @@ class GsmToArduino(app.App):
             # self._reload_()
 
     def _update_sms_workseet(self):
+        # open the worksheet with the matching gsm number
         sms_workseet = self._sms_sheet.worksheet_by_title(constants.GSM_SIM_NUMBER)
         if sms_workseet is None:
             self._logger.warning('sms_workseet named %s didn\'t found', constants.GSM_SIM_NUMBER)
@@ -103,15 +107,19 @@ class GsmToArduino(app.App):
             self._logger.warning('a6_gsm did not respond')
 
     def a6_gsm_sms_recived(self, number, send_time, text):
+        # normalize sms text, number and send_time
         text = text.encode(errors='replace').decode().strip().replace('\n', ' ').replace('\t', ' ').replace('\r', '')
         number = self.a6_gsm.normalize_phone_number(number)
         send_time = send_time.strftime(constants.DATETIME_FORMAT)
+        # log the sms to console and file
         self._logger.info('AT: %s FROM: %s MESSAGES: %s', send_time, number, text)
         self._sms_logger.debug('AT: %s FROM: %s MESSAGES: %s', send_time, number, text)
+        # draw the sms text using the uv bicycle
         try:
             self.uv_bicycle.draw_text_rtl('  ' + text[:constants.UV_BICYCLE_MAX_DRAW_CHARS], constants.UV_BICYCLE_DRAW_RTL)
         except:
             pass
+        # log the sms to the workseet
         try:
             self.sms_workseet.append_table(values=(send_time, number, text))
         except:

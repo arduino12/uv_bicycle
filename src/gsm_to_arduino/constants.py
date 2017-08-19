@@ -5,11 +5,8 @@ from infra.core.ansi import Ansi
 from infra.run.common import *
 
 
-GSM_PORT = 'loop://' if IS_WINDOWS else '/dev/ttyAiGsm'
-UV_BICYCLE_PORT = 'loop://' if IS_WINDOWS else '/dev/ttyUvBicycle'
-
-A6_GSM_SERIAL = {'url': '', 'baudrate': 115200, 'timeout': 1} # 'spy://COM34', 'xonxoff': True, 'rtscts': True
-UV_BICYCLE_SERIAL = {'url': '', 'baudrate': 115200, 'timeout': 1}
+A6_GSM_SERIAL = {'url': 'loop://' if IS_WINDOWS else '/dev/ttyAiGsm', 'baudrate': 115200, 'timeout': 1}
+UV_BICYCLE_SERIAL = {'url': 'loop://' if IS_WINDOWS else '/dev/ttyUvBicycle', 'baudrate': 115200, 'timeout': 1}
 
 UV_BICYCLE_MAX_DRAW_CHARS = 120
 UV_BICYCLE_DRAW_RTL = True
