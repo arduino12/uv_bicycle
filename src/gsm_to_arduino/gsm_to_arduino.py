@@ -54,7 +54,7 @@ class GsmToArduino(app.App):
             for i in ('googleapiclient.discovery', 'oauth2client.transport', 'oauth2client.crypt', 'oauth2client.client'):
                 logging.getLogger(i).setLevel(logging.WARNING)
             # open sheet using the SHEET_FILE_SERVICE key
-            self._drive_sheets = pygsheets.authorize(service_file=constants.SHEET_FILE_SERVICE)
+            self._drive_sheets = pygsheets.authorize(**constants.SHEET_FILE_ARGS)
             self._sms_sheet = self._drive_sheets.open(constants.SHEET_FILE_NAME)
             # open the worksheet within the sheet for sms logging
             self._update_sms_workseet()

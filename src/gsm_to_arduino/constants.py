@@ -21,7 +21,7 @@ SMS_LOGGER_PATH = os.path.join(BASIC_PATH, 'sms_log.txt')
 SMS_LOGGER_SIZE = 1024
 SMS_LOGGER_COUNT = 10
 
-SHEET_FILE_SERVICE = os.path.join(BASIC_PATH, 'logger-995ad2d4b91d.json')
+SHEET_FILE_ARGS = {'service_file': os.path.join(BASIC_PATH, 'logger-995ad2d4b91d.json'), 'no_cache': IS_WINDOWS}
 SHEET_FILE_NAME = 'sms_log'
 
 # LOGOR_LEVEL = logging.DEBUG
