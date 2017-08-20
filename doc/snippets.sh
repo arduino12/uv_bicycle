@@ -16,7 +16,7 @@ alias uv_bicycle_log_all='sudo journalctl --no-tail --no-pager -m -o cat -u uv_b
 alias uv_bicycle_restart='sudo systemctl restart uv_bicycle.service'
 alias uv_bicycle_test_gsm='/home/pi/Public/infra/scripts/run_client.sh --cmd "app.a6_gsm.dummy()"'
 alias uv_bicycle_test_arduino='/home/pi/Public/infra/scripts/run_client.sh --cmd "app.uv_bicycle.draw_fix_text(1)"'
-alias uv_bicycle_usb_restart='sudo systemctl stop uv_bicycle.service; sleep 4; for i in "unbind" "bind"; do sudo sh -c "echo 1-1 > /sys/bus/usb/drivers/usb/$i" && sleep 5; done; sleep 8; sudo systemctl start uv_bicycle.service'
+alias uv_bicycle_usb_restart='sudo systemctl stop uv_bicycle.service; sleep 2; for i in "unbind" "bind"; do sudo sh -c "echo 1-1 > /sys/bus/usb/drivers/usb/$i" && sleep 8; done; sleep 10; sudo systemctl start uv_bicycle.service'
 
 ### wifi ###
 sudo nano /etc/wpa_supplicant/wpa_supplicant.conf
