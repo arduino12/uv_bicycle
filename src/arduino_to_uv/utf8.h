@@ -53,15 +53,15 @@ uint16_t utf8_to_unicode(const char * src, unicode_t * dst, uint16_t dst_size) {
 		ch = 0;
 		switch (trailing) {
 #if UNICODE_BITS > 32
-			case 5: ch += *src++; ch <<= 6;
-			case 4: ch += *src++; ch <<= 6;
+			case 5: ch += (uint8_t)*src++; ch <<= 6;
+			case 4: ch += (uint8_t)*src++; ch <<= 6;
 #endif
 #if UNICODE_BITS > 16
-			case 3: ch += *src++; ch <<= 6;
-			case 2: ch += *src++; ch <<= 6;
+			case 3: ch += (uint8_t)*src++; ch <<= 6;
+			case 2: ch += (uint8_t)*src++; ch <<= 6;
 #endif
-			case 1: ch += *src++; ch <<= 6;
-			case 0: ch += *src++;
+			case 1: ch += (uint8_t)*src++; ch <<= 6;
+			case 0: ch += (uint8_t)*src++;
 		}
 		dst[i++] = ch - UTF8_OFFSETS[trailing];
 	}
@@ -81,7 +81,7 @@ unicode_t utf8_char_at(const char * text, uint16_t index) {
 
 	do {
 		ch <<= 6;
-		ch += *text++;
+		ch += (uint8_t)*text++;
 	} while (*text && index--);
 
 	return ch - UTF8_OFFSETS[trailing];
@@ -102,7 +102,7 @@ void utf8_from_iso_8859_8(char * text) {
 	if (tmp == NULL)
 		return;
 
-	while (ch = *scr++) {
+	while (ch = (uint8_t)*scr++) {
 		if (ch < 0x80) {
 			*dst++ = ch;
 		}

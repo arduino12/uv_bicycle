@@ -8,9 +8,9 @@
 #include "fix_texts.h"
 
 /******************************************/
-#define COMMAND_BUFFER_SIZE			(100)
+#define COMMAND_BUFFER_SIZE			(254)
 #define COMMAND_TIMEOUT_MS			(150)
-#define SCREEN_SAVER_S				(40)
+#define SCREEN_SAVER_S				(90)
 /******************************************/
 
 struct {

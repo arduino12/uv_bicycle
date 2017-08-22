@@ -8,7 +8,7 @@ from infra.run.common import *
 A6_GSM_SERIAL = {'url': 'loop://' if IS_WINDOWS else '/dev/ttyAiGsm', 'baudrate': 115200, 'timeout': 1}
 UV_BICYCLE_SERIAL = {'url': 'loop://' if IS_WINDOWS else '/dev/ttyUvBicycle', 'baudrate': 115200, 'timeout': 1}
 
-UV_BICYCLE_MAX_DRAW_CHARS = 120
+UV_BICYCLE_MAX_DRAW_CHARS = 40
 UV_BICYCLE_DRAW_RTL = True
 UV_BICYCLE_SCREEN_SAVER_SEC = 90
 UV_BICYCLE_SLICE_ON_MS = 70
