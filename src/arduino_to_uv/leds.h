@@ -3,11 +3,10 @@
 
 #include "common.h"
 
-/******************************************/
+/* uncomment if using musium lens leds configuration (led gruop of 3) */
 // #define USE_CAT4016
+/* leds count in multiples of 8 */
 #define LEDS_BITS				32
-/******************************************/
-
 #define leds_bitmask_t			UINT_BITS(LEDS_BITS)
 
 #ifdef USE_CAT4016
@@ -59,6 +58,7 @@
 	#define LEDS_COUNT			(10)
 #endif
 
+/* set the leds by the given bitmask (0 = all off, 5 = first and third on) */
 void leds_write(leds_bitmask_t leds_bitmask) {
 #ifdef USE_CAT4016
 	union {
@@ -77,6 +77,7 @@ void leds_write(leds_bitmask_t leds_bitmask) {
 #endif
 }
 
+/* initialize gpios / led driver, must be called at setup */
 void leds_init() {
 #ifdef USE_CAT4016
 	cat4016_setup();

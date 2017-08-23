@@ -3,12 +3,10 @@
 
 #include "common.h"
 
-/******************************************/
+/* the char to print on utf8 decoding error */
+#define BAD_CHAR			'#'
+/* support unicode 8, 16 or 32 bits */
 #define UNICODE_BITS		16
-/******************************************/
-
-#define BAD_CHAR					'#'
-
 #define unicode_t			UINT_BITS(UNICODE_BITS)
 
 static const unicode_t UTF8_OFFSETS[] = {
@@ -43,6 +41,7 @@ uint8_t utf8_trailing(uint8_t c) {
 #endif
 }
 
+/* converts the given utf8 string to unicode characters array */
 uint16_t utf8_to_unicode(const char * src, unicode_t * dst, uint16_t dst_size) {
 	unicode_t ch;
 	uint16_t i = 0;
@@ -70,6 +69,7 @@ uint16_t utf8_to_unicode(const char * src, unicode_t * dst, uint16_t dst_size) {
 	return i;
 }
 
+/* returns the unicode char at the given index of utf8 string */
 unicode_t utf8_char_at(const char * text, uint16_t index) {
     unicode_t ch = 0;
 
@@ -87,6 +87,7 @@ unicode_t utf8_char_at(const char * text, uint16_t index) {
 	return ch - UTF8_OFFSETS[trailing];
 }
 
+/* returns the length of the given utf8 string */
 uint16_t utf8_char_count(const char * text) {
 	uint8_t char_count = 0;
 	while(*text && ++char_count)
@@ -94,6 +95,7 @@ uint16_t utf8_char_count(const char * text) {
 	return char_count;
 }
 
+/* converts the given iso_8859_8 string to utf8 string */
 void utf8_from_iso_8859_8(char * text) {
 	unicode_t ch;
 	char * scr = text;

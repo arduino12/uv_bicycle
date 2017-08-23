@@ -3,15 +3,18 @@
 #include "graphics.h"
 #include "interactive_menu.h"
 
-/******************************************/
-#define SLICE_ON_MS			(70)		/* time to turn on leds slice (vertical pixels) */
-#define SLICE_OFF_MS		(0)			/* time to turn off leds after each slice is draw */
-#define CHAR_OFF_MS			(90)		/* time to turn off leds after each char is draw */
-#define RIGHT_TO_LEFT		(true)		/* draw the chars from left or right */
+/* turn on leds slice milliseconds (vertical pixels) */
+#define SLICE_ON_MS			(70)
+/* turn off leds milliseconds after each slice is draw */
+#define SLICE_OFF_MS		(0)
+/* turn off leds milliseconds after each char is draw */
+#define CHAR_OFF_MS			(90)
+/* default characters draw diraction */
+#define RIGHT_TO_LEFT		(true)
+/* uart baud rate in bit per seconds */
 #define SERIAL_BAUD_RATE	(115200)
+/* set uart read timeout in milliseconds */
 #define SERIAL_TIMEOUT		(1)
-/******************************************/
-
 
 void setup() {
 	Serial.begin(SERIAL_BAUD_RATE);

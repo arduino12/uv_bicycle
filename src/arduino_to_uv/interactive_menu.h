@@ -7,11 +7,12 @@
 #include "graphics.h"
 #include "fix_texts.h"
 
-/******************************************/
+/* max amount of bytes for a command */
 #define COMMAND_BUFFER_SIZE			(254)
+/* max amount of milliseconds for command buffer to grow */
 #define COMMAND_TIMEOUT_MS			(150)
+/* next screen saver will be draw if command was not recived after that amount of seconds */
 #define SCREEN_SAVER_S				(90)
-/******************************************/
 
 struct {
 	char buffer[COMMAND_BUFFER_SIZE];
@@ -21,7 +22,7 @@ struct {
 
 uint32_t screen_saver_ms = (uint32_t)SCREEN_SAVER_S * 1000;
 
-
+/* prints human readable commands help */
 void print_help() {
 	Serial.println(F(
 		"                  /'\\\n"
@@ -59,16 +60,19 @@ void print_help() {
 	));
 }
 
+/* reads a number from the command buffer */
 uint16_t _interactive_menu_read_16(uint16_t number) {
 	uint16_t i = number;
 	sscanf(command.buffer + 2, "%d", &i);
 	return i;
 }
 
+/* must be called repeatedly from loop, this is our busy loop */
 void interactive_menu_update() {
 	uint32_t cur_millis = millis();
 	uint16_t i;
 
+	/* is it the time for a screen saver? */
 	if (cur_millis > command.timeout) {
 		if (command.buffer_index)
 			command.buffer_index = 0;
@@ -78,6 +82,7 @@ void interactive_menu_update() {
 		}
 	}
 
+	/* got a command? */
 	if (Serial.available()) {
 		if (!command.buffer_index)
 			command.timeout = cur_millis + COMMAND_TIMEOUT_MS;
@@ -141,6 +146,7 @@ void interactive_menu_update() {
 		}
 	}
 
+	/* keep drawing, and notify when finish a slice, a char, and the whole text */
 	graphics_update(cur_millis);
 	switch (graphics_draw.status) {
 		case GRAPHICS_DRAW_SLICE:

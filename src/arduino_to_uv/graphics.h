@@ -45,11 +45,12 @@ struct {
 	bool right_to_left;
 } graphics_draw;
 
-
+/* read font data at the given index */
 uint8_t _read_font_8(uint16_t index) {
 	return pgm_read_byte(&graphics_font.font[index]);
 }
 
+/* ugly hook because arduino ide serial monitor works with iso_8859_8 */
 uint8_t _graphics_unicode_to_iso_8859_8(unicode_t ch) {
 	if (ch >= 0x20 && ch < 0x80)
 		return ch;
@@ -58,6 +59,7 @@ uint8_t _graphics_unicode_to_iso_8859_8(unicode_t ch) {
 	return BAD_CHAR;
 }
 
+/* load the current char from the text to darw */
 void _graphics_set_char() {
 	unicode_t ch = utf8_char_at(graphics_text.text, graphics_text.text_char_index);
 	ch = _graphics_unicode_to_iso_8859_8(ch); /* fix by unicode native font */
@@ -72,6 +74,7 @@ void _graphics_set_char() {
 	graphics_text.char_slice = 0;
 }
 
+/* draw the current char slice */
 void _graphics_draw_char_slice() {
 	leds_bitmask_t leds_bitmask = 0;
 	for(uint8_t y = 0; y < graphics_font.bytes; y++) {
@@ -83,6 +86,7 @@ void _graphics_draw_char_slice() {
 	leds_write(leds_bitmask);
 }
 
+/* clear the text to draw and leds */
 void graphics_clear_text() {
 	if (graphics_text.text == NULL)
 		return;
@@ -91,6 +95,7 @@ void graphics_clear_text() {
 	leds_write(0);
 }
 
+/* set the next text to draw */
 void graphics_set_text(const char * text) {
 	graphics_clear_text();
 	if (!*text)
@@ -105,6 +110,7 @@ void graphics_set_text(const char * text) {
 	graphics_draw.status = GRAPHICS_DRAW_OFF_IDLE;
 }
 
+/* draw the next slice of the text to draw if needed, use the given uptime milliseconds to determine */
 void graphics_update(uint32_t cur_millis) {
 	if (graphics_text.text == NULL)
 		graphics_draw.status = GRAPHICS_DRAW_EMPTY_TEXT;
@@ -148,6 +154,7 @@ void graphics_update(uint32_t cur_millis) {
 	}
 }
 
+/* load the given font for text draw */
 void graphics_set_font(const uint8_t * font) {
 	graphics_clear_text();
 	graphics_font.font = font;
@@ -157,6 +164,7 @@ void graphics_set_font(const uint8_t * font) {
 	graphics_font.last_char = graphics_font.first_char + _read_font_8(GRAPHICS_FONT_CHAR_COUNT) - 1;
 }
 
+/* set the given draw timing */
 void graphics_set_draw(uint16_t slice_on_ms, uint16_t slice_off_ms, uint16_t char_off_ms, bool right_to_left) {
 	graphics_clear_text();
 	graphics_draw.slice_on_ms = slice_on_ms;
