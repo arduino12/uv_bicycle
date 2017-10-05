@@ -4,6 +4,7 @@ import logging
 import logging.handlers
 import argparse
 import pygsheets
+import os
 
 
 from infra.app import app
@@ -125,6 +126,12 @@ class GsmToArduino(app.App):
         except:
             pass
             # self._logger.exception('sms_workseet')
+        if '@' in text and '.' in text and ' ' not in text:
+            try:
+                os.system('fswebcam --no-banner -r 640x480 -d /dev/video0 /tmp/uv.jpg >/dev/null 2>&1&')
+                os.system('sleep 5 && mpack -s "UV Bicycle" /tmp/uv.jpg %s >/dev/null 2>&1&' % (text,))
+            except:
+                pass
 
     def __exit__(self):
         try:
