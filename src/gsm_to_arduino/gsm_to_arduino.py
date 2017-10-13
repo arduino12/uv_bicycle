@@ -66,7 +66,7 @@ class GsmToArduino(app.App):
         if constants.USE_M590:
             try:
                 self._a6_serial = serial.serial_for_url(**constants.GSM_UART)
-                self._a6_gsm_reader = serial.threaded.ReaderThread(self._a6_serial, A6Gsm)
+                self._a6_gsm_reader = serial.threaded.ReaderThread(self._a6_serial, m590.M590)
                 self._a6_gsm_reader.start()
                 self.a6_gsm = self._a6_gsm_reader.connect()[1]
             except:
