@@ -72,8 +72,8 @@ class GsmToArduino(app.App):
             except:
                 self._logger.exception('gsm')
             else:
-                self.a6_gsm.status_changed = self.gsm_status_changed
-                self.a6_gsm.sms_recived = self.gsm_sms_recived
+                self.a6_gsm.status_changed = self.status_changed
+                self.a6_gsm.sms_recived = self.sms_recived
         else:
             try:
                 self._a6_serial = serial.serial_for_url(**constants.A6_GSM_SERIAL)
