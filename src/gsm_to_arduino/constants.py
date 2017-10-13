@@ -4,9 +4,10 @@ import os.path
 from infra.core.ansi import Ansi
 from infra.run.common import *
 
-
+USE_M590 = True
 A6_GSM_SERIAL = {'url': 'loop://' if IS_WINDOWS else '/dev/ttyAiGsm', 'baudrate': 115200, 'timeout': 1}
 UV_BICYCLE_SERIAL = {'url': 'loop://' if IS_WINDOWS else '/dev/ttyUvBicycle', 'baudrate': 115200, 'timeout': 1}
+GSM_UART = {'url': 'loop://' if IS_WINDOWS else '/dev/ttyGsmUart', 'baudrate': 57600, 'timeout': 1}
 
 UV_BICYCLE_MAX_DRAW_CHARS = 40
 UV_BICYCLE_DRAW_RTL = True

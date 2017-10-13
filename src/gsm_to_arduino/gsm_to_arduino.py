@@ -9,6 +9,7 @@ import os
 
 from infra.app import app
 from uv_bicycle.src.gsm_to_arduino import constants
+from infra.old_modules.m590 import m590
 from infra.old_modules.gsm.a6_gsm import A6Gsm
 from infra.old_modules.arduino.uv_bicycle import UvBicycle
 
@@ -62,17 +63,28 @@ class GsmToArduino(app.App):
         except:
             self._logger.exception('sms_workseet')
             # self._reload_()
-        
-        try:
-            self._a6_serial = serial.serial_for_url(**constants.A6_GSM_SERIAL)
-            self._a6_gsm_reader = serial.threaded.ReaderThread(self._a6_serial, A6Gsm)
-            self._a6_gsm_reader.start()
-            self.a6_gsm = self._a6_gsm_reader.connect()[1]
-        except:
-            self._logger.exception('a6_gsm')
+        if constants.USE_M590:
+            try:
+                self._a6_serial = serial.serial_for_url(**constants.GSM_UART)
+                self._a6_gsm_reader = serial.threaded.ReaderThread(self._a6_serial, A6Gsm)
+                self._a6_gsm_reader.start()
+                self.a6_gsm = self._a6_gsm_reader.connect()[1]
+            except:
+                self._logger.exception('gsm')
+            else:
+                self.a6_gsm.status_changed = self.gsm_status_changed
+                self.a6_gsm.sms_recived = self.gsm_sms_recived
         else:
-            self.a6_gsm.status_changed = self.a6_gsm_status_changed
-            self.a6_gsm.sms_recived = self.a6_gsm_sms_recived
+            try:
+                self._a6_serial = serial.serial_for_url(**constants.A6_GSM_SERIAL)
+                self._a6_gsm_reader = serial.threaded.ReaderThread(self._a6_serial, A6Gsm)
+                self._a6_gsm_reader.start()
+                self.a6_gsm = self._a6_gsm_reader.connect()[1]
+            except:
+                self._logger.exception('a6_gsm')
+            else:
+                self.a6_gsm.status_changed = self.a6_gsm_status_changed
+                self.a6_gsm.sms_recived = self.a6_gsm_sms_recived
             
         try:
             self._uv_bicycle_serial = serial.serial_for_url(**constants.UV_BICYCLE_SERIAL)
