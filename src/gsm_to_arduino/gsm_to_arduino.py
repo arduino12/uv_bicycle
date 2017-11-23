@@ -2,6 +2,7 @@ import serial
 import serial.threaded
 import logging
 import logging.handlers
+import platform
 import argparse
 import pygsheets
 import os
@@ -9,8 +10,7 @@ import os
 
 from infra.app import app
 from uv_bicycle.src.gsm_to_arduino import constants
-from infra.old_modules.m590 import m590
-from infra.old_modules.gsm.a6_gsm import A6Gsm
+from infra.old_modules.sim800 import sim800
 from infra.old_modules.arduino.uv_bicycle import UvBicycle
 
 
@@ -42,14 +42,14 @@ class GsmToArduino(app.App):
             metavar='<gsm port>',
             dest='gsm_port',
             type=str,
-            default=constants.A6_GSM_SERIAL['url'],
+            default=constants.gsm_SERIAL['url'],
             help='the A6 gsm module serial port')
         self._args, _ = parser.parse_known_args()
         # print app banner
         print(constants.APP_BANNER)
         # set the chosen serial ports
         constants.UV_BICYCLE_SERIAL['url'] = self._args.arduino_port
-        constants.A6_GSM_SERIAL['url'] = self._args.gsm_port
+        constants.gsm_SERIAL['url'] = self._args.gsm_port
 
         try:
             # ignore sheets DEBUG and INFO spam
@@ -59,33 +59,24 @@ class GsmToArduino(app.App):
             self._drive_sheets = pygsheets.authorize(**constants.SHEET_FILE_ARGS)
             self._sms_sheet = self._drive_sheets.open(constants.SHEET_FILE_NAME)
             # open the worksheet within the sheet for sms logging
-            self._update_sms_workseet()
+            self.sms_workseet = self._sms_sheet.worksheet_by_title(platform.node())
+            if sms_workseet is None:
+                self._logger.warning('sms_workseet named %s didn\'t found', platform.node())
         except:
             self._logger.exception('sms_workseet')
             # self._reload_()
-        if constants.USE_M590:
-            try:
-                self._a6_serial = serial.serial_for_url(**constants.GSM_UART)
-                self._a6_gsm_reader = serial.threaded.ReaderThread(self._a6_serial, m590.M590)
-                self._a6_gsm_reader.start()
-                self.a6_gsm = self._a6_gsm_reader.connect()[1]
-            except:
-                self._logger.exception('gsm')
-            else:
-                self.a6_gsm.status_changed = self.a6_gsm_status_changed
-                self.a6_gsm.sms_recived = self.a6_gsm_sms_recived
+
+        try:
+            self._gsm_serial = serial.serial_for_url(**constants.GSM_UART)
+            self._gsm_reader = serial.threaded.ReaderThread(self._gsm_serial, sim800.Sim800)
+            self._gsm_reader.start()
+            self.gsm = self._gsm_reader.connect()[1]
+        except:
+            self._logger.exception('gsm')
         else:
-            try:
-                self._a6_serial = serial.serial_for_url(**constants.A6_GSM_SERIAL)
-                self._a6_gsm_reader = serial.threaded.ReaderThread(self._a6_serial, A6Gsm)
-                self._a6_gsm_reader.start()
-                self.a6_gsm = self._a6_gsm_reader.connect()[1]
-            except:
-                self._logger.exception('a6_gsm')
-            else:
-                self.a6_gsm.status_changed = self.a6_gsm_status_changed
-                self.a6_gsm.sms_recived = self.a6_gsm_sms_recived
-            
+            self.gsm.status_changed = self.gsm_status_changed
+            self.gsm.sms_recived = self.gsm_sms_recived
+        
         try:
             self._uv_bicycle_serial = serial.serial_for_url(**constants.UV_BICYCLE_SERIAL)
             self._uv_bicycle_reader = serial.threaded.ReaderThread(self._uv_bicycle_serial, UvBicycle)
@@ -101,28 +92,18 @@ class GsmToArduino(app.App):
             self._logger.exception('uv_bicycle')
             # self._reload_()
 
-    def _update_sms_workseet(self):
-        # open the worksheet with the matching gsm number
-        sms_workseet = self._sms_sheet.worksheet_by_title(constants.GSM_SIM_NUMBER)
-        if sms_workseet is None:
-            self._logger.warning('sms_workseet named %s didn\'t found', constants.GSM_SIM_NUMBER)
-            return
-        self.sms_workseet = sms_workseet
+    def gsm_status_changed(self):
+        self._logger.info('gsm_status_changed: %s', self.gsm.status)
+        if self.gsm.status == 'ALIVE':
+            self._logger.info('csq: %s, vbat: %s, temperature: %s',
+                self.gsm.get_csq(), self.gsm.get_vbat(), self.gsm.get_temperature())
+        elif self.gsm.status == 'TIMEOUT':
+            self._logger.warning('gsm did not respond')
 
-    def a6_gsm_status_changed(self):
-        self._logger.info('a6_gsm_status_changed: %s', self.a6_gsm.status)
-        if self.a6_gsm.status == 'ALIVE':
-            if constants.GSM_SIM_NUMBER == '0':
-                constants.GSM_SIM_NUMBER = self.a6_gsm.normalize_phone_number(self.a6_gsm.get_sim_number())
-                self._logger.info('sim_number: %s', constants.GSM_SIM_NUMBER)
-                self._update_sms_workseet()
-        elif self.a6_gsm.status == 'TIMEOUT':
-            self._logger.warning('a6_gsm did not respond')
-
-    def a6_gsm_sms_recived(self, number, send_time, text):
+    def gsm_sms_recived(self, number, send_time, text):
         # normalize sms text, number and send_time
         text = text.encode(errors='replace').decode().strip().replace('\n', ' ').replace('\t', ' ').replace('\r', '')
-        number = self.a6_gsm.normalize_phone_number(number)
+        number = self.gsm.normalize_phone_number(number)
         send_time = send_time.strftime(constants.DATETIME_FORMAT)
         # log the sms to console and file
         self._logger.info('AT: %s FROM: %s MESSAGES: %s', send_time, number, text)
@@ -147,7 +128,7 @@ class GsmToArduino(app.App):
 
     def __exit__(self):
         try:
-            self._a6_gsm_reader.close()
+            self._gsm_reader.close()
         except:
             pass
         try:

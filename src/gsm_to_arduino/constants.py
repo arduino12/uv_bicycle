@@ -4,10 +4,8 @@ import os.path
 from infra.core.ansi import Ansi
 from infra.run.common import *
 
-USE_M590 = True
-A6_GSM_SERIAL = {'url': 'loop://' if IS_WINDOWS else '/dev/ttyAiGsm', 'baudrate': 115200, 'timeout': 1}
 UV_BICYCLE_SERIAL = {'url': 'loop://' if IS_WINDOWS else '/dev/ttyUvBicycle', 'baudrate': 115200, 'timeout': 1}
-GSM_UART = {'url': 'loop://' if IS_WINDOWS else '/dev/ttyGsmUart', 'baudrate': 57600, 'timeout': 1}
+GSM_UART = {'url': 'loop://' if IS_WINDOWS else '/dev/ttyGsmUart', 'baudrate': 115200, 'timeout': 1}
 
 UV_BICYCLE_MAX_DRAW_CHARS = 40
 UV_BICYCLE_DRAW_RTL = True
@@ -15,8 +13,6 @@ UV_BICYCLE_SCREEN_SAVER_SEC = 90
 UV_BICYCLE_SLICE_ON_MS = 70
 UV_BICYCLE_SLICE_OFF_MS = 0
 UV_BICYCLE_CHAR_OFF_MS = 90
-
-GSM_SIM_NUMBER = '0'
 
 SMS_LOGGER_PATH = os.path.join(BASIC_PATH, 'sms_log.txt')
 SMS_LOGGER_SIZE = 1024
