@@ -56,6 +56,15 @@ uint8_t _graphics_unicode_to_iso_8859_8(unicode_t ch) {
 		return ch;
 	if (ch >= 0x05D0 && ch < 0x05EB)
 		return ch - 0x05D0 + 0x80;
+	switch (ch) {
+		case 0xC4: return 0x9B;
+		case 0xD6: return 0x9C;
+		case 0xDC: return 0x9D;
+		case 0xDF: return 0x9E;
+		case 0xE4: return 0x9F;
+		case 0xF6: return 0xA0;
+		case 0xFC: return 0xA1;
+	}
 	return BAD_CHAR;
 }
 
@@ -80,7 +89,7 @@ void _graphics_draw_char_slice() {
 	for(uint8_t y = 0; y < graphics_font.bytes; y++) {
 		leds_bitmask <<= 8;
 		leds_bitmask |= _read_font_8(
-			graphics_text.char_offset + y + graphics_font.bytes *
+			graphics_text.char_offset + graphics_font.bytes - y - 1 + graphics_font.bytes *
 			(graphics_draw.right_to_left ? graphics_text.char_slices - graphics_text.char_slice - 1 : graphics_text.char_slice));
 	}
 	leds_write(leds_bitmask);

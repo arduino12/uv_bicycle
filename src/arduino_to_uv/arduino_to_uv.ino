@@ -1,5 +1,5 @@
 #include "leds.h"
-#include "heb_5x7.h"
+#include "heb_ger_11x13.h"
 #include "graphics.h"
 #include "interactive_menu.h"
 
@@ -20,7 +20,7 @@ void setup() {
 	Serial.begin(SERIAL_BAUD_RATE);
 	Serial.setTimeout(SERIAL_TIMEOUT);
 	leds_init();
-	graphics_set_font(heb_5x7);
+	graphics_set_font(heb_ger_11x13);
 	graphics_set_draw(SLICE_ON_MS, SLICE_OFF_MS, CHAR_OFF_MS, RIGHT_TO_LEFT);
 	print_help();
 }

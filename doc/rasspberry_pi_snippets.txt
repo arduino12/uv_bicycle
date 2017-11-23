@@ -1,16 +1,12 @@
 
 ### aliases ###
-nano /home/pi/.bash_aliases
+sudo nano /home/pi/.bash_aliases
 alias ll='ls -lhA'
 alias ..='cd ..'
 alias df='df -H'
 alias du='du -ch'
-chr() {
-  printf \\$(printf '%03o' $1)\\n
-}
-ord() {
-  printf '%d\n' "'$1"
-}
+
+
 alias uv_bicycle_log='sudo journalctl -e -f -n 50 -o cat -u uv_bicycle.service'
 alias uv_bicycle_log_all='sudo journalctl --no-tail --no-pager -m -o cat -u uv_bicycle.service'
 alias uv_bicycle_restart='sudo systemctl restart uv_bicycle.service'
@@ -20,6 +16,7 @@ alias uv_bicycle_test_arduino='/home/pi/Public/infra/scripts/run_client.sh --cmd
 alias uv_bicycle_usb_restart='sudo systemctl stop uv_bicycle.service; sleep 2; for i in "unbind" "bind"; do sudo sh -c "echo 1-1 > /sys/bus/usb/drivers/usb/$i" && sleep 8; done; sleep 10; sudo systemctl start uv_bicycle.service'
 alias uv_bicycle_picture='sudo fswebcam --no-banner -r 640x480 -d /dev/video0 /tmp/uv.jpg && mpack -s "UV Bicycle" /tmp/uv.jpg'
 alias uv_bicycle_test_csq='/home/pi/Public/infra/scripts/run_client.sh --cmd '\''print(app.a6_gsm.send_command("AT+CSQ"))'\'''
+alias uv_bicycle_video='sudo ffmpeg -y -f video4linux2 -s 640x480 -t 5.7 -i /dev/video0 /tmp/uv.avi && mpack -s "UV Bicycle" /tmp/uv.avi'
 
 ### wifi ###
 sudo nano /etc/wpa_supplicant/wpa_supplicant.conf

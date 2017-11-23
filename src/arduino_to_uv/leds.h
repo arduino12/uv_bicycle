@@ -74,6 +74,7 @@ void leds_write(leds_bitmask_t leds_bitmask) {
 #else
 	PORTD = (PORTD & 0x03) | ((leds_bitmask & 0x003F) << 2);
 	PORTB = (PORTB & 0xF0) | ((leds_bitmask & 0x03C0) >> 6);
+	PORTC = (PORTC & 0xF0) | ((leds_bitmask & 0x3C00) >> 10);
 #endif
 }
 
@@ -84,6 +85,7 @@ void leds_init() {
 #else
 	DDRD |= 0xFC;	/* (2 - 7 OUTPUT) */
 	DDRB |= 0x0F;	/* (8 - 11 OUTPUT) */
+	DDRC |= 0x0F;	/* (A0 - A3 OUTPUT) */
 #endif
 	leds_write(0);
 }
