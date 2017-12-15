@@ -26,3 +26,10 @@ https://www.itead.cc/wiki/Serial_Port_Bluetooth_Module_(Master/Slave)_:_HC-05
 	AT+CMODE=0
 	AT+BIND=0000, 00, 000000
 	AT+RESET
+
+<uploader>
+	AT+NAME=Arduino Uploader
+	AT+UART=115200,0,0 // UNO
+	AT+UART=57600,0,0 // PRO
+	AT+POLAR=1,0
+	AT+INIT
