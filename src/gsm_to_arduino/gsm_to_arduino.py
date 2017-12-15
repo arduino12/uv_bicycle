@@ -1,82 +1,35 @@
+import os
+import logging
+import datetime
+import platform
 import serial
 import serial.threaded
-import logging
-import logging.handlers
-import platform
-import argparse
-import pygsheets
-import os
 
 
 from infra.app import app
-from uv_bicycle.src.gsm_to_arduino import constants
 from infra.old_modules.sim800 import sim800
+from infra.modules.google.sheets import sheets
+from uv_bicycle.src.gsm_to_arduino import constants
 from infra.old_modules.arduino.uv_bicycle import UvBicycle
 
 
 class GsmToArduino(app.App):
-    # colored stdout logger for app
     _logger = logging.getLogger('gsm_to_arduino')
-    # rotating file logger for sms messages
-    _sms_logger = logging.getLogger('sms_logger')
 
     def __init__(self):
-        app.App.__init__(self, constants)
-        # config sms logger
-        self._sms_logger.propagate = False
-        self._sms_logger.setLevel(logging.DEBUG)
-        self._sms_logger.addHandler(logging.handlers.RotatingFileHandler(
-            constants.SMS_LOGGER_PATH, constants.SMS_LOGGER_SIZE, constants.SMS_LOGGER_COUNT))
-        # parse runtime arguments
-        parser = argparse.ArgumentParser(
-            description='UV Bicycle')
-        parser.add_argument(
-            '--arduino_port',
-            metavar='<arduino port>',
-            dest='arduino_port',
-            type=str,
-            default=constants.UV_BICYCLE_SERIAL['url'],
-            help='the arduino (BT) serial port')
-        parser.add_argument(
-            '--gsm_port',
-            metavar='<gsm port>',
-            dest='gsm_port',
-            type=str,
-            default=constants.gsm_SERIAL['url'],
-            help='the A6 gsm module serial port')
-        self._args, _ = parser.parse_known_args()
+        app.App.__init__(self, constants, spam_loggers=sheets.Sheets.SPAM_LOGGERS)
+        self._modules.extend((sim800, sheets))
+        # google sheets logger
+        try:
+            self.sheets = sheets.Sheets(constants.SERVICE_ACCOUNT_PATH)
+        except:
+            self._logger.exception('self.sheet')
+            self.sheets = None
+        # google sheets name is the hostname
+        constants.WORKSHEET_SMS_NAME = platform.node()
         # print app banner
         print(constants.APP_BANNER)
-        # set the chosen serial ports
-        constants.UV_BICYCLE_SERIAL['url'] = self._args.arduino_port
-        constants.gsm_SERIAL['url'] = self._args.gsm_port
-
-        try:
-            # ignore sheets DEBUG and INFO spam
-            for i in ('googleapiclient.discovery', 'oauth2client.transport', 'oauth2client.crypt', 'oauth2client.client'):
-                logging.getLogger(i).setLevel(logging.WARNING)
-            # open sheet using the SHEET_FILE_SERVICE key
-            self._drive_sheets = pygsheets.authorize(**constants.SHEET_FILE_ARGS)
-            self._sms_sheet = self._drive_sheets.open(constants.SHEET_FILE_NAME)
-            # open the worksheet within the sheet for sms logging
-            self.sms_workseet = self._sms_sheet.worksheet_by_title(platform.node())
-            if sms_workseet is None:
-                self._logger.warning('sms_workseet named %s didn\'t found', platform.node())
-        except:
-            self._logger.exception('sms_workseet')
-            # self._reload_()
-
-        try:
-            self._gsm_serial = serial.serial_for_url(**constants.GSM_UART)
-            self._gsm_reader = serial.threaded.ReaderThread(self._gsm_serial, sim800.Sim800)
-            self._gsm_reader.start()
-            self.gsm = self._gsm_reader.connect()[1]
-        except:
-            self._logger.exception('gsm')
-        else:
-            self.gsm.status_changed = self.gsm_status_changed
-            self.gsm.sms_recived = self.gsm_sms_recived
-        
+        # connect to uv bicycle
         try:
             self._uv_bicycle_serial = serial.serial_for_url(**constants.UV_BICYCLE_SERIAL)
             self._uv_bicycle_reader = serial.threaded.ReaderThread(self._uv_bicycle_serial, UvBicycle)
@@ -91,11 +44,23 @@ class GsmToArduino(app.App):
         except:
             self._logger.exception('uv_bicycle')
             # self._reload_()
+        # connect to gsm
+        try:
+            self._gsm_uart = serial.serial_for_url(**constants.GSM_UART)
+            self._gsm_reader = serial.threaded.ReaderThread(self._gsm_uart, sim800.Sim800)
+            self._gsm_reader.start()
+            self.gsm = self._gsm_reader.connect()[1]
+        except:
+            self._logger.exception('gsm')
+            self.gsm = None
+        else:
+            self.gsm.status_changed = self.gsm_status_changed
+            self.gsm.sms_recived = self.gsm_sms_recived
 
     def gsm_status_changed(self):
         self._logger.info('gsm_status_changed: %s', self.gsm.status)
         if self.gsm.status == 'ALIVE':
-            self._logger.info('csq: %s, vbat: %s, temperature: %s',
+            self._logger.info(constants.GSM_DATA_FORMAT,
                 self.gsm.get_csq(), self.gsm.get_vbat(), self.gsm.get_temperature())
         elif self.gsm.status == 'TIMEOUT':
             self._logger.warning('gsm did not respond')
@@ -103,28 +68,49 @@ class GsmToArduino(app.App):
     def gsm_sms_recived(self, number, send_time, text):
         # normalize sms text, number and send_time
         text = text.encode(errors='replace').decode().strip().replace('\n', ' ').replace('\t', ' ').replace('\r', '')
-        number = self.gsm.normalize_phone_number(number)
+        normalize_number = self.gsm.normalize_phone_number(number)
         send_time = send_time.strftime(constants.DATETIME_FORMAT)
-        # log the sms to console and file
-        self._logger.info('AT: %s FROM: %s MESSAGES: %s', send_time, number, text)
-        self._sms_logger.debug('AT: %s FROM: %s MESSAGES: %s', send_time, number, text)
-        # draw the sms text using the uv bicycle
-        try:
-            self.uv_bicycle.draw_text_rtl('  ' + text[:constants.UV_BICYCLE_MAX_DRAW_CHARS], constants.UV_BICYCLE_DRAW_RTL)
-        except:
-            pass
-        # log the sms to the workseet
-        try:
-            self.sms_workseet.append_table(values=(send_time, number, text))
-        except:
-            pass
-            # self._logger.exception('sms_workseet')
-        if '@' in text and '.' in text and ' ' not in text:
+        self._logger.info('AT: %s FROM: %s MESSAGES: %s', send_time, normalize_number, text)
+        if text == 'REBOOT':
+            self.send_sms(number, constants.REBOOT_FORMAT, False)
+            os.system('shutdown -r')
+        elif text == 'GSM DATA':
             try:
-                os.system('fswebcam --no-banner -r 640x480 -d /dev/video0 /tmp/uv.jpg >/dev/null 2>&1&')
-                os.system('sleep 5 && mpack -s "UV Bicycle" /tmp/uv.jpg %s >/dev/null 2>&1&' % (text,))
+                t = constants.GSM_DATA_FORMAT % (
+                    self.gsm.get_csq(), self.gsm.get_vbat(), self.gsm.get_temperature())
+            except:
+                self._logger.warning('cant read gsm data')
+                return
+            # self._logger.info(t)
+            self.send_sms(number, t.replace(', ', '\n'), False)
+        else:
+            # draw the sms text using the uv bicycle
+            try:
+                self.uv_bicycle.draw_text_rtl('  ' + text[:constants.UV_BICYCLE_MAX_DRAW_CHARS], constants.UV_BICYCLE_DRAW_RTL)
             except:
                 pass
+            # log to worksheet
+            if self.sheets is not None:
+                try:
+                    self.sheets.append_worksheet_table(constants.SHEET_SMS_LOG_NAME, constants.WORKSHEET_SMS_NAME,
+                        send_time, normalize_number, text)
+                except:
+                    self._logger.exception('self.sheets')
+                    self.sheets = None
+            if '@' in text and '.' in text and ' ' not in text:
+                try:
+                    path = constants.PICTURES_PATH % (datetime.datetime.now().strftime(constants.PICTURES_DATETIME_FORMAT),)
+                    os.system('raspistill -n -o /tmp/camera_picture.png >/dev/null 2>&1&')
+                    os.system('sleep 5 && mpack -s "UV Bicycle" /tmp/uv.jpg %s >/dev/null 2>&1&' % (text,))
+                except:
+                    pass
+
+    def send_sms(self, number, text, raise_exception=True):
+        try:
+            self.gsm.send_sms(number, text)
+        except:
+            if raise_exception:
+                raise
 
     def __exit__(self):
         try:
