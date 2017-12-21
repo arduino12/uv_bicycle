@@ -100,8 +100,7 @@ class GsmToArduino(app.App):
             if '@' in text and '.' in text and ' ' not in text:
                 try:
                     path = constants.PICTURES_PATH % (datetime.datetime.now().strftime(constants.PICTURES_DATETIME_FORMAT),)
-                    os.system('raspistill -n -o /tmp/camera_picture.png >/dev/null 2>&1&')
-                    os.system('sleep 5 && mpack -s "UV Bicycle" /tmp/uv.jpg %s >/dev/null 2>&1&' % (text,))
+                    os.system('raspistill -n -o {0} && mpack -s "UV Bicycle" {0} {1} && rm {0} >/dev/null 2>&1&'.format(path, text))
                 except:
                     pass
 
