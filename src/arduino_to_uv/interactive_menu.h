@@ -23,7 +23,8 @@ struct {
 uint32_t screen_saver_ms = (uint32_t)SCREEN_SAVER_S * 1000;
 
 /* prints human readable commands help */
-void print_help() {
+void print_help()
+{
 	Serial.println(F(
 		"                  /'\\\n"
 		"                 /\n"
@@ -45,8 +46,8 @@ void print_help() {
 		"    LEDs off time\n"
 		"C <char_off_ms[0-32K]>\n"
 		"    LEDs off time between characters\n"
-		"D <right_to_left[0-1]>\n"
-		"    Draw to the left if zero\n"
+		"D <draw_diraction[0-3]>\n"
+		"    First bit is right to left, second bit is top to bottom\n"
 		"E <text[printable ascii and hebrew]>\n"
 		"    Draw the given text\n"
 		"F <text_index[0-4]>\n"
@@ -61,14 +62,16 @@ void print_help() {
 }
 
 /* reads a number from the command buffer */
-uint16_t _interactive_menu_read_16(uint16_t number) {
+uint16_t _interactive_menu_read_16(uint16_t number)
+{
 	uint16_t i = number;
 	sscanf(command.buffer + 2, "%d", &i);
 	return i;
 }
 
 /* must be called repeatedly from loop, this is our busy loop */
-void interactive_menu_update() {
+void interactive_menu_update()
+{
 	uint32_t cur_millis = millis();
 	uint16_t i;
 
@@ -118,8 +121,8 @@ void interactive_menu_update() {
 				break;
 				case 'D':
 					graphics_clear_text();
-					graphics_draw.right_to_left = _interactive_menu_read_16(graphics_draw.right_to_left);
-					Serial.print(F("right_to_left = ")); Serial.println(graphics_draw.right_to_left);
+					graphics_draw.draw_diraction = _interactive_menu_read_16(graphics_draw.draw_diraction);
+					Serial.print(F("draw_diraction = ")); Serial.println(graphics_draw.draw_diraction);
 				break;
 				case 'E':
 					utf8_from_iso_8859_8(command.buffer + 2);

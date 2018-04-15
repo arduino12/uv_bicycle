@@ -19,6 +19,9 @@
 #define GRAPHICS_DRAW_CHAR			(4)
 #define GRAPHICS_DRAW_TEXT			(5)
 
+#define GRAPHICS_RIGHT_TO_LEFT		(1)
+#define GRAPHICS_TOP_TO_BOTTOM		(2)
+
 struct {
 	const uint8_t * font = NULL;
 	uint8_t height;
@@ -42,16 +45,18 @@ struct {
 	uint16_t slice_off_ms;
 	uint16_t char_off_ms;
 	uint32_t next_millis;
-	bool right_to_left;
+	uint8_t draw_diraction;
 } graphics_draw;
 
 /* read font data at the given index */
-uint8_t _read_font_8(uint16_t index) {
+uint8_t _read_font_8(uint16_t index)
+{
 	return pgm_read_byte(&graphics_font.font[index]);
 }
 
 /* ugly hook because arduino ide serial monitor works with iso_8859_8 */
-uint8_t _graphics_unicode_to_iso_8859_8(unicode_t ch) {
+uint8_t _graphics_unicode_to_iso_8859_8(unicode_t ch)
+{
 	if (ch >= 0x20 && ch < 0x80)
 		return ch;
 	if (ch >= 0x05D0 && ch < 0x05EB)
@@ -69,7 +74,8 @@ uint8_t _graphics_unicode_to_iso_8859_8(unicode_t ch) {
 }
 
 /* load the current char from the text to darw */
-void _graphics_set_char() {
+void _graphics_set_char()
+{
 	unicode_t ch = utf8_char_at(graphics_text.text, graphics_text.text_char_index);
 	ch = _graphics_unicode_to_iso_8859_8(ch); /* fix by unicode native font */
 
@@ -84,19 +90,30 @@ void _graphics_set_char() {
 }
 
 /* draw the current char slice */
-void _graphics_draw_char_slice() {
+void _graphics_draw_char_slice()
+{
 	leds_bitmask_t leds_bitmask = 0;
-	for(uint8_t y = 0; y < graphics_font.bytes; y++) {
+	uint16_t char_offset = graphics_text.char_offset + graphics_font.bytes *
+		(graphics_draw.draw_diraction & GRAPHICS_RIGHT_TO_LEFT ?
+		graphics_text.char_slices - graphics_text.char_slice - 1 : graphics_text.char_slice);
+
+	for(int8_t y = graphics_font.bytes - 1; y >= 0; y--) {
 		leds_bitmask <<= 8;
-		leds_bitmask |= _read_font_8(
-			graphics_text.char_offset + graphics_font.bytes - y - 1 + graphics_font.bytes *
-			(graphics_draw.right_to_left ? graphics_text.char_slices - graphics_text.char_slice - 1 : graphics_text.char_slice));
+		leds_bitmask |= _read_font_8(char_offset + y);
+	}
+
+	if (graphics_draw.draw_diraction & GRAPHICS_TOP_TO_BOTTOM) {
+		leds_bitmask_t reverse_bitmask = 0;
+		for(uint8_t i = 0; i < graphics_font.height; i++, reverse_bitmask <<= 1, leds_bitmask >>= 1)
+			reverse_bitmask |= (leds_bitmask & 1);
+		leds_bitmask = reverse_bitmask;
 	}
 	leds_write(leds_bitmask);
 }
 
 /* clear the text to draw and leds */
-void graphics_clear_text() {
+void graphics_clear_text()
+{
 	if (graphics_text.text == NULL)
 		return;
 	free(graphics_text.text);
@@ -105,7 +122,8 @@ void graphics_clear_text() {
 }
 
 /* set the next text to draw */
-void graphics_set_text(const char * text) {
+void graphics_set_text(const char * text)
+{
 	graphics_clear_text();
 	if (!*text)
 		return;
@@ -120,7 +138,8 @@ void graphics_set_text(const char * text) {
 }
 
 /* draw the next slice of the text to draw if needed, use the given uptime milliseconds to determine */
-void graphics_update(uint32_t cur_millis) {
+void graphics_update(uint32_t cur_millis)
+{
 	if (graphics_text.text == NULL)
 		graphics_draw.status = GRAPHICS_DRAW_EMPTY_TEXT;
 	
@@ -164,7 +183,8 @@ void graphics_update(uint32_t cur_millis) {
 }
 
 /* load the given font for text draw */
-void graphics_set_font(const uint8_t * font) {
+void graphics_set_font(const uint8_t * font)
+{
 	graphics_clear_text();
 	graphics_font.font = font;
 	graphics_font.height = _read_font_8(GRAPHICS_FONT_HEIGHT);
@@ -174,12 +194,13 @@ void graphics_set_font(const uint8_t * font) {
 }
 
 /* set the given draw timing */
-void graphics_set_draw(uint16_t slice_on_ms, uint16_t slice_off_ms, uint16_t char_off_ms, bool right_to_left) {
+void graphics_set_draw(uint16_t slice_on_ms, uint16_t slice_off_ms, uint16_t char_off_ms, uint8_t draw_diraction)
+{
 	graphics_clear_text();
 	graphics_draw.slice_on_ms = slice_on_ms;
 	graphics_draw.slice_off_ms = slice_off_ms;
 	graphics_draw.char_off_ms = char_off_ms;
-	graphics_draw.right_to_left = right_to_left;
+	graphics_draw.draw_diraction = draw_diraction;
 }
 
 #endif /* GRAPHICS_H */

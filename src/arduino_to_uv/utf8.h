@@ -42,7 +42,8 @@ uint8_t utf8_trailing(uint8_t c) {
 }
 
 /* converts the given utf8 string to unicode characters array */
-uint16_t utf8_to_unicode(const char * src, unicode_t * dst, uint16_t dst_size) {
+uint16_t utf8_to_unicode(const char * src, unicode_t * dst, uint16_t dst_size)
+{
 	unicode_t ch;
 	uint16_t i = 0;
 	uint8_t trailing;
@@ -70,7 +71,8 @@ uint16_t utf8_to_unicode(const char * src, unicode_t * dst, uint16_t dst_size) {
 }
 
 /* returns the unicode char at the given index of utf8 string */
-unicode_t utf8_char_at(const char * text, uint16_t index) {
+unicode_t utf8_char_at(const char * text, uint16_t index)
+{
     unicode_t ch = 0;
 
 	while(*text && index--)
@@ -88,7 +90,8 @@ unicode_t utf8_char_at(const char * text, uint16_t index) {
 }
 
 /* returns the length of the given utf8 string */
-uint16_t utf8_char_count(const char * text) {
+uint16_t utf8_char_count(const char * text)
+{
 	uint8_t char_count = 0;
 	while(*text && ++char_count)
 		text += utf8_trailing(*text) + 1;
@@ -96,7 +99,8 @@ uint16_t utf8_char_count(const char * text) {
 }
 
 /* converts the given iso_8859_8 string to utf8 string */
-void utf8_from_iso_8859_8(char * text) {
+void utf8_from_iso_8859_8(char * text)
+{
 	unicode_t ch;
 	char * scr = text;
 	char * tmp = (char*)malloc(strlen(text) * 2 + 1);

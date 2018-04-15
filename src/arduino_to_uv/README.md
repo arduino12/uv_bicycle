@@ -5,8 +5,6 @@ Arduino code for rotating led/laser array.
 
 [arduino_to_uv.ino](https://github.com/arduino12/uv_bicycle/tree/master/src/arduino_to_uv/arduino_to_uv.ino) - Main arduino code, draw timing constants.
 
-[cat4016.h](https://github.com/arduino12/uv_bicycle/tree/master/src/arduino_to_uv/cat4016.h) - Lib for cat4016 constant current drivers.
-
 [common.h](https://github.com/arduino12/uv_bicycle/tree/master/src/arduino_to_uv/common.h) - Common macros.
 
 [fix_texts.h](https://github.com/arduino12/uv_bicycle/tree/master/src/arduino_to_uv/fix_texts.h) - Permanent text for screen saver, saved in flash.
