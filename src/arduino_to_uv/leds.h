@@ -22,10 +22,8 @@
  * |_00_|_00_|                 |_00_|_00_|
 */
 
-#define PM(pin)				(pin - 2)
 const uint8_t LED_PIN_MAP[] = {
-	PM(11), PM(3), PM(10), PM(4), PM(2), PM(5), PM(A0),
-	PM(6), PM(A1), PM(7), PM(A2), PM(8), PM(A3), PM(9)
+	7, 13, 6, 12, 5, 11, 4, 10, 3, 2, 1, 9, 0, 8
 };
 #define LEDS_COUNT			(ARRAY_SIZE(LED_PIN_MAP))
 

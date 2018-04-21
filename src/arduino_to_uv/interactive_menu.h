@@ -58,6 +58,8 @@ void print_help()
 		"    Print help\n"
 		"I <leds_bitmask[0-32K]>\n"
 		"    Set LEDs to the given bitmask\n"
+		"J <led_index[0-15]>\n"
+		"    Turn on the given led (15 is off)\n"
 	));
 }
 
@@ -143,6 +145,11 @@ void interactive_menu_update()
 					i = _interactive_menu_read_16(0);
 					Serial.print(F("leds_mask = ")); Serial.println(i, BIN);
 					leds_write(i);
+				break;
+				case 'J':
+					i = _interactive_menu_read_16(0);
+					Serial.print(F("leds_index = ")); Serial.println(i);
+					leds_write(1 << i);
 				break;
 			}
 			command.buffer_index = 0;

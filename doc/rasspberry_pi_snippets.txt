@@ -37,7 +37,7 @@ tail -f /home/pi/Public/sms_log.log
 ### serial ports ###
 # auto serial port shortcuts
 sudo nano /etc/udev/rules.d/90-usb-serial.rules
-SUBSYSTEM=="tty",KERNELS=="1-1.2:1.0",SYMLINK+="ttyAiGsm"
+SUBSYSTEM=="tty",KERNELS=="1-1.2:1.0",SYMLINK+="ttyGsmUart"
 SUBSYSTEM=="tty",KERNELS=="1-1.4:1.0",SYMLINK+="ttyUvBicycle"
 
 ### arduino ###
