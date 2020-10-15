@@ -4,6 +4,7 @@ import datetime
 import platform
 import serial
 import serial.threaded
+import unicodedata
 
 
 from infra.app import app
@@ -85,8 +86,10 @@ class GsmToArduino(app.App):
             self.send_sms(number, t.replace(', ', '\n'), False)
         else:
             # draw the sms text using the uv bicycle
+            text2 = text[:constants.UV_BICYCLE_MAX_DRAW_CHARS]
+            text2 = ''.join((c for c in unicodedata.normalize('NFD', text2) if unicodedata.category(c) != 'Mn'))
             try:
-                self.uv_bicycle.draw_text_rtl('  ' + text[:constants.UV_BICYCLE_MAX_DRAW_CHARS], constants.UV_BICYCLE_DRAW_RTL)
+                self.uv_bicycle.draw_text_rtl('  ' + text2, constants.UV_BICYCLE_DRAW_RTL)
             except:
                 pass
             # log to worksheet
